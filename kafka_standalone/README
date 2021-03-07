@@ -1,0 +1,17 @@
+This playbook will create a standalone Kafka node
+
+Anything that needs updated is located in vars/main.yml
+
+There is test script which runs at the end to test the node is working as expected.
+
+If successful, you will see this on your Ansible output:
+ok: [IP] => {
+    "testscript.stdout": "Creating test topic.....\nCreated topic mytesttopic.\n\n
+    Describe test topic.....\nTopic: mytesttopic\tPartitionCount: 1\tReplicationFactor: 1\tConfigs: segment.bytes=1073741824\n\tTopic: mytesttopic\tPartition: 0\tLeader: 0\tReplicas: 0\tIsr: 0\n\n
+    Produce test message into topic.....\n>>\n
+    Consume test message from topic.....\nThis is a test message on mytesttopic\n\n
+    Congrats! If you got this far without errors, your standalone Kafka node is good to go!"
+}
+
+Also included some helpful scripts in your Kafka user's home to create, describe and list topics.
+NOTE: Kafka user should be NON-ROOT so if it is ever compromised the system cannot be damaged
