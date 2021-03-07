@@ -80,7 +80,7 @@
         dest: /etc/systemd/system/multi-user.target.wants/kafka.service
         state: link
 
-    - name: Start/enable zookee per systemd service
+    - name: Start/enable zookeeper systemd service
       ansible.builtin.systemd:
         state: started
         daemon_reload: yes
