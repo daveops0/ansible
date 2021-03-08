@@ -1,0 +1,15 @@
+[Unit]
+Description=Apache Zookeeper Service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+
+User={{ kafka_user }}
+Group={{ kafka_group }}
+
+ExecStart={{ kafka_home }}/{{ zk_start_script }} {{ kafka_home }}/{{ zk_properties_file}}
+ExecStop={{ kafka_home }}/{{ zk_stop_script }}
+
+[Install]
+WantedBy=multi-user.target

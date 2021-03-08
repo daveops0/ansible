@@ -1,8 +1,23 @@
-This playbook will create a standalone Kafka node
+This playbook will create a standalone Kafka node which includes a local Zookeeper service
 
-Anything that needs updated is located in vars/main.yml
+It has been tested and works on Red Hat 7, CentOS 7, CentOS 8 and Debian.
 
-There is test script which runs at the end to test the node is working as expected.
+Roles are used for each Operating system by gathering Ansible facts of the host the playbook is running on
+
+run command:
+  ansible-playbook -i hosts site.yml
+
+site.yml gathers OS info then loads tasks/main.yml and vars/main.yml
+
+tasks/main.yml runs tasks/debian.yml or tasks/redhat.yml with OS specific commands
+
+These each import their respective OS specific vars/ files
+
+Anything that can be updated is in /vars
+You may want to add some new config in, I just have the basics to get it running
+
+There is a test script at the end which makes sure the node is healthy:
+Creates a topic > describes the topic > produces a test message > consumes the same test message
 
 If successful, you will see this on your Ansible output:
 ok: [IP] => {

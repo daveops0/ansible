@@ -1,0 +1,7 @@
+---
+- name: Deploy a standalone Kafka node
+  hosts: all
+  remote_user: root
+
+  roles:
+    - kafka

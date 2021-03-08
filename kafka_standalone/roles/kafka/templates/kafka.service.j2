@@ -1,0 +1,16 @@
+[Unit]
+Description=Apache Kafka Service
+Requires=zookeeper.service
+After=zookeeper.service
+
+[Service]
+Type=simple
+
+User={{ kafka_user }}
+Group={{ kafka_group }}
+
+ExecStart={{ kafka_home }}/{{ kafka_start_script }} {{ kafka_home }}/config/server.properties
+ExecStop={{ kafka_home }}/{{ kafka_stop_script }}
+
+[Install]
+WantedBy=multi-user.target

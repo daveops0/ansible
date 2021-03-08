@@ -1,0 +1,13 @@
+
+- name: Load OS specific Vars
+  include_vars: debian.yml
+
+- name: Install Unzip
+  ansible.builtin.apt:
+   name: "{{ unzip_package }}"
+   state: present
+
+- name: Install Java
+  ansible.builtin.apt:
+   name: "{{ java_package }}"
+   state: present

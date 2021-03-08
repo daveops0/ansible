@@ -1,0 +1,134 @@
+- name: Redhat specific tasks
+  import_tasks: redhat.yml
+  when: ansible_facts['os_family']|lower == 'redhat'
+
+- name: Debian specific tasks
+  import_tasks: debian.yml
+  when: ansible_facts['os_family']|lower == 'debian'
+
+- name: Export java_home
+  ansible.builtin.lineinfile:
+   dest: "{{ bash_profile }}"
+   line: "{{ java_export }}"
+
+- name: Download and unzip kafka
+  unarchive:
+    src: "{{ kafka_download_url }}"
+    dest: "{{ kafka_download_dir }}"
+    remote_src: yes
+
+- name: Add kafka group
+  ansible.builtin.group:
+    name: "{{ kafka_group }}"
+    state: present
+
+- name: Add kafka user
+  ansible.builtin.user:
+    name: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    shell: "{{ kafka_user_shell }}"
+
+- name: Create a soft link
+  ansible.builtin.file:
+    src: "{{ kafka_download_dir }}{{ kafka_download_file }}"
+    dest: "{{ kafka_home }}"
+    state: link
+    force: yes
+    follow: yes
+
+- name: Change file ownership, group and permissions
+  ansible.builtin.file:
+    path: "{{ kafka_download_dir }}{{ kafka_download_file }}"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: "{{ kafka_download_file_perms }}"
+    recurse: yes
+
+- name: Add zk config file
+  ansible.builtin.template:
+    src: "{{ zk_properties_template }}"
+    dest: "{{ kafka_home }}/{{ zk_properties_file }}"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: "{{ zk_properties_file_perm }}"
+  notify:
+    - Restart Zookeeper
+    - Restart Kafka
+
+- name: Add zk sysd file
+  ansible.builtin.template:
+    src: "{{ zk_sysd_service_template }}"
+    dest: "{{ sysd_lib }}/{{ zk_service_name }}"
+    owner: "{{ sysd_service_owner }}"
+    group: "{{ sysd_service_group }}"
+    mode: "{{ sysd_file_perm }}"
+  notify:
+    - Reload systemd
+
+- name: Add kafka config file
+  ansible.builtin.template:
+    src: "{{ kafka_properties_template }}"
+    dest: "{{ kafka_home }}/{{ kafka_properties_file }}"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: "{{ kafka_properties_file_perm }}"
+  notify:
+    - Restart Kafka
+
+- name: Add kafka sysd file
+  ansible.builtin.template:
+    src: "{{ kafka_sysd_service_template }}"
+    dest: "{{ sysd_lib }}/{{ kafka_service_name }}"
+    owner: "{{ sysd_service_owner }}"
+    group: "{{ sysd_service_group }}"
+    mode: "{{ sysd_file_perm }}"
+  notify:
+    - Reload systemd
+
+- name: Create zookeeper systemd link
+  ansible.builtin.file:
+    src: '{{ sysd_lib }}/{{ zk_service_name }}'
+    dest: '{{ sysd_service_dir}}/{{ zk_service_name }}'
+    state: link
+
+- name: Create kafka systemd link
+  ansible.builtin.file:
+    src: '{{ sysd_lib }}/{{ kafka_service_name }}'
+    dest: '{{ sysd_service_dir}}/{{ kafka_service_name }}'
+    state: link
+
+- name: Start/enable zookeeper systemd service
+  ansible.builtin.systemd:
+    state: started
+    daemon_reload: yes
+    name: "{{ zk_service_name }}"
+    enabled: yes
+
+- name: Start/enable kafka systemd service
+  ansible.builtin.systemd:
+    state: started
+    daemon_reload: yes
+    name: "{{ kafka_service_name }}"
+    enabled: yes
+
+- name: Add useful scripts
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: "{{ script_perms }}"
+  with_items:
+    - {src: '{{ create_template }}',dest: '{{ scripts_dir }}/{{ create_script }}'}
+    - {src: '{{ describe_template }}',dest: '{{ scripts_dir }}/{{ describe_script }}'}
+    - {src: '{{ list_template }}',dest: '{{ scripts_dir }}/{{ list_script }}'}
+    - {src: '{{ test_template }}',dest: '{{ scripts_dir }}/{{ test_script }}'}
+
+- name: run test script
+  become_user: "{{ kafka_user }}"
+  shell: "{{ scripts_dir }}/{{ test_script }}"
+  register: testscript
+
+- name: test script result
+  debug:
+    var: testscript.stdout

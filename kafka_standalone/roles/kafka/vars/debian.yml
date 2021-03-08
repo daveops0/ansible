@@ -1,0 +1,18 @@
+
+
+###
+### System specific Vars
+###
+  unzip_package: unzip
+  bash_profile: /etc/bash.bashrc
+
+  sysd_lib: /lib/systemd/system/
+  sysd_service_dir: /etc/systemd/system/multi-user.target.wants/
+  sysd_service_owner: root
+  sysd_service_group: root
+
+###
+### Java Vars
+###
+  java_package: openjdk-8-jre
+  java_export:  "JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/"

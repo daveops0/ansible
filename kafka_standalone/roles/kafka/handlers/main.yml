@@ -1,0 +1,14 @@
+  - name: Reload systemd
+    ansible.builtin.systemd:
+      daemon_reload: yes
+
+
+  - name: Restart Zookeeper
+    ansible.builtin.service:
+      name: "{{ zk_service_name }}"
+      state: restarted
+
+  - name: Restart Kafka
+    ansible.builtin.service:
+      name: "{{ kafka_service_name }}"
+      state: restarted
